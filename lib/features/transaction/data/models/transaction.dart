@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import '../../../category/data/models/category.dart';
 
 /// Represents a financial transaction, either an income or an expense.
 ///
@@ -18,8 +19,8 @@ class Transaction {
   /// Date and time the transaction occurred.
   final DateTime date;
 
-  /// The ID of the category this transaction belongs to (e.g., "food", "salary").
-  final String categoryId;
+  /// The Category object (with its own type, name and ID).
+  final Category category;
 
   /// Whether the transaction is an [TransactionType.income] or [TransactionType.expense].
   final TransactionType type;
@@ -32,7 +33,7 @@ class Transaction {
     required double amount,
     required String description,
     required DateTime date,
-    required String categoryId,
+    required Category category,
     required TransactionType type
   }) {
     return Transaction._internal(
@@ -40,7 +41,7 @@ class Transaction {
       amount: amount,
       description: description,
       date: date,
-      categoryId: categoryId,
+      category: category,
       type: type
     );
   }
@@ -51,7 +52,7 @@ class Transaction {
     required this.amount,
     required this.description,
     required this.date,
-    required this.categoryId,
+    required this.category,
     required this.type
   });
 
@@ -61,18 +62,18 @@ class Transaction {
       'amount': amount,
       'description': description,
       'date': date.toIso8601String(),
-      'category_id': categoryId,
+      'category_id': category.id,
       'type': type.name, // Store as string for better readability
     };
   }
 
-  factory Transaction.fromMap(Map<String, dynamic> map) {
+  factory Transaction.fromMap(Map<String, dynamic> map, Category category) {
     return Transaction._internal(
       id: map['id'],
       amount: map['amount'],
       description: map['description'],
       date: DateTime.parse(map['date']),
-      categoryId: map['category_id'],
+      category: category,
       type: TransactionType.values.firstWhere(
         (e) => e.name == map['type'],
         orElse: () => TransactionType.expense, // default/fallback type
