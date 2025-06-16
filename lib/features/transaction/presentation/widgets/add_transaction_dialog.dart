@@ -51,8 +51,7 @@ class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
       amount: double.parse(_amountController.text),
       description: _descriptionController.text.trim(),
       date: _selectedDate,
-      categoryId: _selectedCategory!.id,
-      type: _selectedType,
+      category: _selectedCategory!
     );
 
     widget.onSubmit(transaction);
