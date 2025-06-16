@@ -26,25 +26,23 @@ class DatabaseHelper {
     return _database!;
   }
 
-  /// Initializes the SQLite database by creating/opening it
   Future<Database> _initDatabase() async {
-    // Get the device-specific path to store the database
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, 'finance_tracker.db');
+    // Use the default databases directory (usually /data/data/<package>/databases/)
+    String databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, 'finance_tracker.db');
 
-    // Open or create the database
     return await openDatabase(
       path,
       version: 1,
       onCreate: _onCreate,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
     );
   }
 
   /// Creates the necessary tables when the database is first created
   Future<void> _onCreate(Database db, int version) async {
-    // Enable foreign key constraints
-    await db.execute('PRAGMA foreign_keys = ON');
-
     // Create the categories table
     await db.execute('''
       CREATE TABLE categories (
@@ -62,9 +60,16 @@ class DatabaseHelper {
         description TEXT,              -- Optional description
         date TEXT NOT NULL,            -- ISO 8601 formatted date
         category_id TEXT NOT NULL,     -- Foreign key to categories
-        type TEXT NOT NULL,            -- 'income', 'expense' or 'saving' 
         FOREIGN KEY (category_id) REFERENCES categories(id)
       )
     ''');
   }
+
+  /// Safely close the database
+  Future close() async{
+    final db = await database;
+
+    db.close();
+  }
+
 }
