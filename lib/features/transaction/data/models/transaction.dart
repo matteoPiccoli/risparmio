@@ -3,7 +3,7 @@ import '../../../category/data/models/category.dart';
 
 /// Represents a financial transaction, either an income or an expense.
 ///
-/// Each transaction has an amount, description, date, category, and type.
+/// Each transaction has an amount, description, date, and category.
 /// The [TransactionType] indicates whether it's money in or out.
 /// An auto-generated UUID is used to uniquely identify each transaction.
 class Transaction {
@@ -22,9 +22,6 @@ class Transaction {
   /// The Category object (with its own type, name and ID).
   final Category category;
 
-  /// Whether the transaction is an [TransactionType.income] or [TransactionType.expense].
-  final TransactionType type;
-
   /// Creates a new transaction with a unique ID.
   ///
   /// Use this factory when you want to create a new transaction without
@@ -33,16 +30,14 @@ class Transaction {
     required double amount,
     required String description,
     required DateTime date,
-    required Category category,
-    required TransactionType type
+    required Category category
   }) {
     return Transaction._internal(
       id: _uuid.v4(),
       amount: amount,
       description: description,
       date: date,
-      category: category,
-      type: type
+      category: category
     );
   }
 
@@ -52,8 +47,7 @@ class Transaction {
     required this.amount,
     required this.description,
     required this.date,
-    required this.category,
-    required this.type
+    required this.category
   });
 
   Map<String, dynamic> toMap() {
@@ -62,8 +56,7 @@ class Transaction {
       'amount': amount,
       'description': description,
       'date': date.toIso8601String(),
-      'category_id': category.id,
-      'type': type.name, // Store as string for better readability
+      'category_id': category.id
     };
   }
 
@@ -73,11 +66,7 @@ class Transaction {
       amount: map['amount'],
       description: map['description'],
       date: DateTime.parse(map['date']),
-      category: category,
-      type: TransactionType.values.firstWhere(
-        (e) => e.name == map['type'],
-        orElse: () => TransactionType.expense, // default/fallback type
-      )
+      category: category
     );
   }
 }
