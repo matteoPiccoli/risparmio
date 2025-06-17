@@ -1,13 +1,17 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:risparmio/features/transaction/data/models/transaction.dart';
 import 'package:risparmio/features/category/data/models/category.dart';
-import 'package:risparmio/core/db/database_helper.dart';
+import 'package:risparmio/features/category/data/models/default_categories.dart';
 
 /// Data Access Object (DAO) for managing categories in the local database.
 /// 
 /// Provides methods to insert, retrieve, update, and delete transaction categories.
 class CategoryDao {
-  final dbHelper = DatabaseHelper();
+  /// The SQLite database instance passed during initialization.
+  final Database db;
+
+  /// Creates a [CategoryDao] with a given [Database] instance.
+  CategoryDao(this.db);
 
   /// Inserts a new category into the database.
   /// 
@@ -15,7 +19,6 @@ class CategoryDao {
   /// 
   /// Returns the row ID of the inserted category.
   Future<void> insertCategory(Category category) async {
-    final db = await dbHelper.database;
     await db.insert(
       'categories',
       category.toMap(),
@@ -23,11 +26,19 @@ class CategoryDao {
     );
   }
 
+  /// Inserts all the default categories in the database.
+  /// 
+  /// If a category with the same ID already exists, it will be replaced.
+  Future<void> insertDefaultCategories() async {
+    for (var category in defaultCategories) {
+      await insertCategory(category);
+    }
+  }
+
   /// Retrieves all categorties from the database.
   /// 
   /// Returns a list of [Category] objects.
   Future<List<Category>> getAllCategories() async {
-    final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query('categories');
 
     return maps.map((map) => Category.fromMap(map)).toList();
@@ -39,7 +50,6 @@ class CategoryDao {
   /// 
   /// Returns a list of [Category] objects matching the given type.
   Future<List<Category>> getCategoriesByType(TransactionType type) async {
-    final db = await dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'categories',
       where: 'type = ?',
@@ -52,7 +62,6 @@ class CategoryDao {
   /// 
   /// Returns the number of rows affected (should be 1 if successful).
   Future<void> deleteCategory(String id) async {
-    final db = await dbHelper.database;
     await db.delete(
       'categories',
       where: 'id = ?',
@@ -66,7 +75,6 @@ class CategoryDao {
   /// 
   /// Returns the number of rows affected.
   Future<void> updateCategory(Category category) async {
-    final db = await dbHelper.database;
     await db.update(
       'categories',
       category.toMap(),
