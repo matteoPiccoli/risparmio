@@ -1,7 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
+import '../../features/category/data/dao/category_dao.dart';
 
 /// A singleton class responsible for managing the SQLite database.
 /// 
@@ -63,6 +62,14 @@ class DatabaseHelper {
         FOREIGN KEY (category_id) REFERENCES categories(id)
       )
     ''');
+
+    // Insert the default categories in the categories table
+    final categoryDao = CategoryDao(db);
+
+    print("Inserting default categories...");
+
+    await categoryDao.insertDefaultCategories();
+    print("Inserted default categories!!!");
   }
 
   /// Safely close the database
