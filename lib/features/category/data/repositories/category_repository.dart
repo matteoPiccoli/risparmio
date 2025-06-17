@@ -1,4 +1,5 @@
 import 'package:risparmio/features/category/data/dao/category_dao.dart';
+import 'package:risparmio/core/db/database_helper.dart';
 import '../models/category.dart';
 
 /// Repository that acts as an abstraction layer between the data source (DAO)
@@ -8,7 +9,12 @@ import '../models/category.dart';
 /// from the rest of your application. It can also be extended to support
 /// remote APIs or caching in the future.
 class CategoryRepository {
-  final CategoryDao _dao = CategoryDao();
+  late final CategoryDao _dao;
+
+  Future<void> init() async {
+    final db = await DatabaseHelper().database;
+    _dao = CategoryDao(db);
+  }
 
   /// Retrieves all categories stored in the database.
   ///
