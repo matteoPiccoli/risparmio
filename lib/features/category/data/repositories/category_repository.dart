@@ -9,11 +9,16 @@ import '../models/category.dart';
 /// from the rest of your application. It can also be extended to support
 /// remote APIs or caching in the future.
 class CategoryRepository {
-  late final CategoryDao _dao;
+  final CategoryDao _dao;
 
-  Future<void> init() async {
+  // Private constructor
+  CategoryRepository._(this._dao);
+
+  /// Factory for async initialization
+  static Future<CategoryRepository> create() async {
     final db = await DatabaseHelper().database;
-    _dao = CategoryDao(db);
+    final dao = CategoryDao(db);
+    return CategoryRepository._(dao);
   }
 
   /// Retrieves all categories stored in the database.
