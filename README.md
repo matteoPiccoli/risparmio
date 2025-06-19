@@ -70,3 +70,25 @@ Data Access Layer (TransactionDao)
      ↓
 Local DB (SQLite via sqflite)
 
+## How to go "inside" the database of my app
+ 1. Run the app from the emulator
+ 2. Open the terminal and type the following:
+
+``` 
+adb shell
+run-as com.example.risparmio --> app name can be found in android/app/build.gradle.kts
+cd databases
+ls
+```
+
+# Copy to your local machine the database
+```
+adb exec-out run-as com.example.risparmio cat databases/finance_tracker.db > ~/Downloads/finance_tracker.db
+```
+
+
+
+// TODO:
+- Try to summarize in one place the categories and transactions fields. And re-use them. This allows ease reuse for the database.
+- Try to understand notifier, provider and state
+- Understand the futures and async programming with dart.
