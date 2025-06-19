@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../view_model/transaction_provider.dart';
 import '../widgets/add_transaction_dialog.dart';
-import '../../../category/data/models/default_categories.dart';
+import '../../../category/presentation/view_model/category_provider.dart';
 
 class TransactionListScreen extends ConsumerWidget {
   const TransactionListScreen({super.key});
@@ -10,6 +10,7 @@ class TransactionListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transactions = ref.watch(transactionNotifierProvider).transactions;
+    final categoryNotifierAsync = ref.watch(categoryNotifierProviderFuture);
 
     return Scaffold(
       appBar: AppBar(
@@ -28,17 +29,25 @@ class TransactionListScreen extends ConsumerWidget {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showDialog(
-          context: context,
-          builder: (_) => AddTransactionDialog(
-            categories: defaultCategories,
-            onSubmit: (transaction) {
-              ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
-            },
+      floatingActionButton: categoryNotifierAsync.when(
+        data: (notifier) => FloatingActionButton(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (_) => AddTransactionDialog(
+              categories: notifier.state.categories,
+              onSubmit: (txn) {
+                ref.read(transactionNotifierProvider.notifier).addTransaction(txn);
+              },
+            ),
           ),
+          child: const Icon(Icons.add),
         ),
-        child: const Icon(Icons.add),
+        loading: () => const SizedBox.shrink(), // or a disabled button
+        error: (err, _) => FloatingActionButton(
+          onPressed: null,
+          backgroundColor: Colors.grey,
+          child: const Icon(Icons.error),
+        ),
       ),
     );
   }
