@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:risparmio/core/db/database_helper.dart';
 import 'package:risparmio/features/transaction/data/models/transaction.dart' as txn;
+import '../../../category/data/models/category.dart';
 
 /// Data Access Object (DAO) for managing transactions in the local database.
 /// 
@@ -29,11 +30,23 @@ class TransactionDao {
   Future<List<txn.Transaction>> getAllTransactions() async {
     final db = await dbHelper.database;
 
-    final List<Map<String, dynamic>> maps = await db.query('transactions');
+    final List<Map<String, dynamic>> results = await db.rawQuery('''
+      SELECT t.id, t.amount, t.description, t.date, t.category_id,
+            c.name AS category_name, c.type AS category_type
+      FROM transactions t
+      JOIN categories c ON t.category_id = c.id
+    ''');
 
-    return maps
-        .map((map) => txn.Transaction.fromMap(map))
-        .toList();
+    return results.map((map) {
+      final categoryMap = {
+        'id': map['category_id'],
+        'name': map['category_name'],
+        'type': map['category_type'],
+      };
+
+      final category = Category.fromMap(categoryMap);
+      return txn.Transaction.fromMap(map, category);
+    }).toList();
   }
 
   /// Retrieves transactions filtered by type (e.g., income or expense).
@@ -44,13 +57,23 @@ class TransactionDao {
   Future<List<txn.Transaction>> getTransactionsByType(txn.TransactionType type) async {
     final db = await dbHelper.database;
 
-    final List<Map<String, dynamic>> maps = await db.query(
-      'transactions',
-      where: 'type = ?',
-      whereArgs: [type.index], // enums are stored as integers
-    );
+    final List<Map<String, dynamic>> results = await db.rawQuery('''
+      SELECT t.*, c.name AS category_name, c.type AS category_type
+      FROM transactions t
+      JOIN categories c ON t.category_id = c.id
+      WHERE t.type = ?
+    ''', [type.name]); // Match type as string
 
-    return maps.map((map) => txn.Transaction.fromMap(map)).toList();
+    return results.map((map) {
+      final categoryMap = {
+        'id': map['category_id'],
+        'name': map['category_name'],
+        'type': map['category_type'],
+      };
+
+      final category = Category.fromMap(categoryMap);
+      return txn.Transaction.fromMap(map, category);
+    }).toList();
   }
 
   /// Deletes a transaction by its [id].
